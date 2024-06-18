@@ -1,7 +1,7 @@
 import math
 
 """
-A closer look at the balanced traversal sequence, requiring a static environment with a predetermined number of nodes.
+A closer look at the traversal sequence.
 
 Attributes:
     n (int): The number of nodes, or size of the circular array.
@@ -12,28 +12,44 @@ Attributes:
     num_visits (map): A map tracking the number of times each node has been visited (for simulation purposes).
 
 Methods:
-    __init__(self, n): Initializes the BalancedTraversal instance with the size of the circular array.
+    __init__(self, n): Initializes the BalancedSequence instance with the size of the circular array.
     next(self): Gets the next node in the traversal sequence.
     generate(self, length): Runs the traversal up to a specified length.
 """
-class Traversal:
+class Sequence:
 
     def __init__(self, n):
         # n, number of nodes, or size of the circular array.
         self.n = n
         # k, approximately half the size of the circular array.
         self.k = math.ceil(n / 2)
-        # Number of times each node has been visited.
-        self.num_visits = {i: 0 for i in range(n)}
+        # Internal step counter
+        self.i = 0
         # Current number in the sequence, or index of the circular array.
         self.current = 0
         # The generated sequence, or traversal order.
         self.sequence = []
-        # Internal step counter
+        # Number of times each node has been visited.
+        self.num_visits = {i: 0 for i in range(n)}
+    
+    def generate(self, length):
+        # Reset any previous sequence and visits
         self.i = 0
+        self.current = 0
+        self.sequence = []
+        self.num_visits = {i: 0 for i in range(self.n)}
+
+        for _ in range(length):
+            next = self.next()
+            # Update the sequence.
+            self.sequence.append(next)
+            self.num_visits[next] = self.num_visits.get(next, 0) + 1
+
+        return self.sequence, self.num_visits
 
     def next(self):
         if self.i == 0:
+            # Start with 0
             next = 0
         else:
             """
@@ -52,9 +68,7 @@ class Traversal:
         # Keep the index within the circular array.
         next = next % self.n
 
-        # Update the sequence.
-        self.sequence.append(next)
-        self.num_visits[next] = self.num_visits.get(next, 0) + 1
+        # Update current
         self.current = next
 
         # Increment step counter
@@ -62,24 +76,34 @@ class Traversal:
 
         return next
 
-    def generate(self, length):
-        # Reset any previous sequence and visits
-        self.sequence = []
-        self.num_visits = {i: 0 for i in range(self.n)}
-        self.current = 0
-        self.i = 0
+    """
+    This function takes a segment of the sequence, preferrably of length n, 
+    and reflects each element around the midpoint (n-1)/2, and then reverses 
+    the order of the elements. This function is an involution that when done
+    once, provides a later segment of the sequence.
 
-        for _ in range(length):
-            self.next()
+    Args:
+        segment (list of int): The segment of the permutation to be transformed.
+        n (int): The size of the full permutation (number of nodes in the ring).
 
-        return self.sequence, self.num_visits
+    Returns:
+        list of int: The transformed segment.
+    """
+    def reflect_and_reverse(permutation, n):
+        return reverse(reflect(permutation, n))
+
+    
+def reverse(permutation):
+    return permutation[::-1]
+
+def reflect(permutation, n):
+    return [(n - 1) - v for v in permutation]
 
 # Usage
-t = Traversal(9)
+s = Sequence(17)
 # Runs the traversal for a fixed length
-sequence, num_visits = t.generate(77)
+sequence, num_visits = s.generate(178)
+
 print("Sequence:", sequence)
 print("Number of visits:", num_visits)
-# Get the next node in the sequence
-next = t.next()
-print("Next node:", next)
+print("Next node:", s.next())
